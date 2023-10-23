@@ -39,13 +39,13 @@ const styles = StyleSheet.create({
 Font.register({
   family: 'Open Sans',
   fonts: [
-    { src: './fonts/OpenSans-Medium.ttf', fontWeight: 'normal' },
+    { src: './fonts/PlayfairDisplay-Medium.ttf', fontWeight: 'normal' },
     {
-      src: './fonts/OpenSans-Bold.ttf',
+      src: './fonts/PlayfairDisplay-Bold.ttf',
       fontWeight: 'bold',
     },
     {
-      src: './fonts/OpenSans-MediumItalic.ttf',
+      src: './fonts/PlayfairDisplay-MediumItalic.ttf',
       fontStyle: 'italic',
     },
   ],
