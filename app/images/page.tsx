@@ -1,18 +1,19 @@
 'use client';
 import { useImageData } from '@/hooks/useImageData';
-import {
-  ColorManipulationRequest,
-  ColorManipulationResponse,
-  RGBA,
-} from '@/types/colorManipulation';
+import { RGBA } from '@/types/colorManipulation';
 import { useCallback, useEffect, useRef } from 'react';
 import { RgbControls } from './RgbControls';
 
+const change = (original: number, range: number, initial: number) => {
+  const diff = range - initial;
+
+  return Math.max(Math.min(255, original + diff), 0);
+};
+
 export default function Images() {
-  const workerRef = useRef<Worker>();
   const inputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const imageData = useImageData(inputRef);
+  const { imageData, originalImageData } = useImageData(inputRef);
 
   const paint = useCallback((data?: ImageData) => {
     const canvas = canvasRef.current;
@@ -21,47 +22,42 @@ export default function Images() {
       return;
     }
 
-    const ctx = canvas.getContext('2d')!;
-    canvas.height = data.height;
-    canvas.width = data.width;
-    ctx.reset();
-    ctx.putImageData(data, 0, 0);
+    requestAnimationFrame(() => {
+      const ctx = canvas.getContext('2d')!;
+      canvas.height = data.height;
+      canvas.width = data.width;
+      ctx.reset();
+      ctx.putImageData(data, 0, 0);
+    });
   }, []);
 
   useEffect(() => {
     paint(imageData);
   }, [paint, imageData]);
 
-  useEffect(() => {
-    workerRef.current = new Worker(new URL('../../workers/ColorManipulator.ts', import.meta.url));
-    workerRef.current.onmessage = (event: MessageEvent<ColorManipulationResponse>) => {
-      if (event.data.type !== 'response:manipulate-colors') {
+  const onControlsChange = useCallback(
+    (colors: RGBA) => {
+      if (!imageData || !originalImageData) {
         return;
       }
 
-      console.log('response:manipulate-colors');
-      paint(event.data.imageData);
-    };
-    return () => {
-      workerRef.current?.terminate();
-    };
-  }, [paint]);
+      const { red, green, blue, alpha } = colors;
 
-  const onControlsChange = (colors: RGBA) => {
-    if (!imageData || !workerRef.current) {
-      return;
-    }
+      const n = imageData.data.length;
 
-    const payload: ColorManipulationRequest = {
-      type: 'request:manipulate-colors',
-      imageData,
-      ...colors,
-    };
+      requestAnimationFrame(() => {
+        for (let i = 0; i < n; i += 4) {
+          imageData.data[i] = change(originalImageData.data[i], red, 127);
+          imageData.data[i + 1] = change(originalImageData.data[i + 1], green, 127);
+          imageData.data[i + 2] = change(originalImageData.data[i + 2], blue, 127);
+          imageData.data[i + 3] = change(originalImageData.data[i + 3], alpha, 255);
+        }
+      });
 
-    workerRef.current.postMessage(payload);
-  };
-
-  console.log('render page');
+      paint(imageData);
+    },
+    [imageData, originalImageData, paint]
+  );
 
   return (
     <main className="h-full flex flex-col gap-2 p-5">

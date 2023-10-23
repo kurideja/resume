@@ -1,6 +1,6 @@
 import { RangeInput } from '@/components/images/RangeInput';
 import { RGBA } from '@/types/colorManipulation';
-import { ComponentProps, useEffect } from 'react';
+import { ComponentProps, useEffect, useTransition } from 'react';
 import { Path, useForm } from 'react-hook-form';
 
 interface Props {
@@ -10,42 +10,47 @@ interface Props {
 
 export function RgbControls(props: Props) {
   const { disabled, onChange } = props;
-  const { control, setValue, watch, getValues, reset: resetForm } = useForm<RGBA>();
-
-  const formValues = watch();
+  const {
+    control,
+    setValue,
+    reset: resetForm,
+    watch,
+  } = useForm<RGBA>({ defaultValues: { red: 127, green: 127, blue: 127, alpha: 255 } });
+  const [, startTransition] = useTransition();
+  const values = watch();
 
   useEffect(() => {
-    onChange(getValues());
-  }, [formValues, getValues, onChange]);
+    onChange(values);
+  }, [onChange, values]);
 
   const handleInputChange = (name: Path<RGBA>, value: number) => {
-    setValue(name, value);
+    startTransition(() => {
+      setValue(name, value);
+    });
   };
 
-  const colorInput = (color: Path<RGBA>): ComponentProps<typeof RangeInput<RGBA>> => {
+  const reset = () => {
+    resetForm();
+  };
+
+  const rangeInput = (color: Path<RGBA>): ComponentProps<typeof RangeInput<RGBA>> => {
     return {
       name: color,
       label: color,
       min: 0,
       max: 255,
-      defaultValue: 127,
       step: 1,
       control,
       handleInputChange,
     };
   };
 
-  const alphaInput = (): ComponentProps<typeof RangeInput<RGBA>> => {
-    return {
-      ...colorInput('alpha'),
-      defaultValue: 255,
-    };
-  };
-
-  const rangeInputs = [colorInput('red'), colorInput('green'), colorInput('blue'), alphaInput()];
-  const reset = () => {
-    resetForm();
-  };
+  const rangeInputs = [
+    rangeInput('red'),
+    rangeInput('green'),
+    rangeInput('blue'),
+    rangeInput('alpha'),
+  ];
 
   return (
     <form className="flex flex-col gap-2">

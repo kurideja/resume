@@ -4,7 +4,7 @@ type MakeRequiredProps<T> = {
   [K in keyof T]-?: T[K];
 };
 
-type RequiredControllerProps = 'control' | 'name' | 'defaultValue' | 'control';
+type RequiredControllerProps = 'control' | 'name' | 'control';
 
 interface Props<T extends FieldValues>
   extends MakeRequiredProps<Pick<UseControllerProps<T>, RequiredControllerProps>> {
@@ -17,7 +17,7 @@ interface Props<T extends FieldValues>
 }
 
 export function RangeInput<T extends FieldValues>(props: Props<T>) {
-  const { name, label, min, max, step, defaultValue, control, disabled, handleInputChange } = props;
+  const { name, label, min, max, step, control, disabled, handleInputChange } = props;
 
   return (
     <div>
@@ -28,7 +28,6 @@ export function RangeInput<T extends FieldValues>(props: Props<T>) {
       <Controller
         name={name}
         control={control}
-        defaultValue={defaultValue}
         render={({ field }) => (
           <input
             type="range"

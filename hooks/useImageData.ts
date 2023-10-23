@@ -2,6 +2,18 @@ import { RefObject, useCallback, useEffect, useState } from 'react';
 
 export function useImageData(ref: RefObject<HTMLInputElement>) {
   const [imageData, setImageData] = useState<ImageData>();
+  const [clonedImageData, setClonedImageData] = useState<ImageData>();
+
+  const getClone = useCallback(() => {
+    return (
+      imageData &&
+      new ImageData(new Uint8ClampedArray(imageData.data), imageData.width, imageData.height)
+    );
+  }, [imageData]);
+
+  useEffect(() => {
+    setClonedImageData(getClone());
+  }, [getClone, setImageData]);
 
   const onChange: EventListener = useCallback(() => {
     const file = ref.current?.files?.[0];
@@ -30,7 +42,14 @@ export function useImageData(ref: RefObject<HTMLInputElement>) {
 
         const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
 
-        setImageData(imageData);
+        const { data: originalData } = imageData;
+
+        const writableCopy = context.createImageData(image.width, image.height);
+
+        const data = new Uint8ClampedArray(originalData);
+
+        writableCopy.data.set(data);
+        setImageData(writableCopy);
       };
 
       image.src = e.target!.result as string;
@@ -51,5 +70,5 @@ export function useImageData(ref: RefObject<HTMLInputElement>) {
     return () => input.removeEventListener('change', onChange);
   }, [ref, onChange]);
 
-  return imageData;
+  return { originalImageData: getClone(), imageData: clonedImageData };
 }
