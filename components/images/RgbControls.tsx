@@ -1,36 +1,30 @@
 import { RangeInput } from '@/components/images/RangeInput';
 import { RGBA } from '@/types/colorManipulation';
-import { ComponentProps, useEffect, useTransition } from 'react';
+import { ComponentProps } from 'react';
 import { Path, useForm } from 'react-hook-form';
 
 interface Props {
   disabled?: boolean;
-  onChange: (colors: RGBA) => void;
+  onChange: (color: keyof RGBA, value: number) => void;
+  onReset: () => void;
 }
 
 export function RgbControls(props: Props) {
-  const { disabled, onChange } = props;
+  const { disabled, onChange, onReset } = props;
   const {
     control,
     setValue,
     reset: resetForm,
-    watch,
   } = useForm<RGBA>({ defaultValues: { red: 127, green: 127, blue: 127, alpha: 255 } });
-  const [, startTransition] = useTransition();
-  const values = watch();
-
-  useEffect(() => {
-    onChange(values);
-  }, [onChange, values]);
 
   const handleInputChange = (name: Path<RGBA>, value: number) => {
-    startTransition(() => {
-      setValue(name, value);
-    });
+    onChange(name, value);
+    setValue(name, value);
   };
 
   const reset = () => {
     resetForm();
+    onReset();
   };
 
   const rangeInput = (color: Path<RGBA>): ComponentProps<typeof RangeInput<RGBA>> => {

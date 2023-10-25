@@ -1,0 +1,14 @@
+{
+  "name": "image-manipulation",
+  "version": "0.1.0",
+  "files": [
+    "image_manipulation_bg.wasm",
+    "image_manipulation.js",
+    "image_manipulation.d.ts"
+  ],
+  "module": "image_manipulation.js",
+  "types": "image_manipulation.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

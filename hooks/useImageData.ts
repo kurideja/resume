@@ -24,39 +24,34 @@ export function useImageData(ref: RefObject<HTMLInputElement>) {
 
     const reader = new FileReader();
 
-    reader.onload = (e) => {
-      const image = new Image();
-
-      image.onload = () => {
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-
-        if (!context) {
-          return;
-        }
-
-        canvas.width = image.width;
-        canvas.height = image.height;
-
-        context.drawImage(image, 0, 0);
-
-        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-
-        const { data: originalData } = imageData;
-
-        const writableCopy = context.createImageData(image.width, image.height);
-
-        const data = new Uint8ClampedArray(originalData);
-
-        writableCopy.data.set(data);
-        setImageData(writableCopy);
-      };
-
-      image.src = e.target!.result as string;
-    };
+    reader.onload = (e) => loadImage(e.target!.result as string);
 
     reader.readAsDataURL(file);
   }, [ref]);
+
+  const loadImage = (src: string) => {
+    const image = new Image();
+
+    image.onload = () => {
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+
+      if (!context) {
+        return;
+      }
+
+      canvas.width = image.width;
+      canvas.height = image.height;
+
+      context.drawImage(image, 0, 0);
+
+      const imageDataFromContext = context.getImageData(0, 0, canvas.width, canvas.height);
+
+      setImageData(imageDataFromContext);
+    };
+
+    image.src = src;
+  };
 
   useEffect(() => {
     const input = ref.current;
@@ -70,5 +65,14 @@ export function useImageData(ref: RefObject<HTMLInputElement>) {
     return () => input.removeEventListener('change', onChange);
   }, [ref, onChange]);
 
-  return { originalImageData: getClone(), imageData: clonedImageData };
+  const reset = () => {
+    setClonedImageData(getClone());
+  };
+
+  return {
+    originalImageData: getClone(),
+    imageData: clonedImageData,
+    reset,
+    loadImageFromUrl: loadImage,
+  };
 }

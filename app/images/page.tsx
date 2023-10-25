@@ -1,19 +1,21 @@
 'use client';
 import { useImageData } from '@/hooks/useImageData';
 import { RGBA } from '@/types/colorManipulation';
-import { useCallback, useEffect, useRef } from 'react';
-import { RgbControls } from './RgbControls';
-
-const change = (original: number, range: number, initial: number) => {
-  const diff = range - initial;
-
-  return Math.max(Math.min(255, original + diff), 0);
-};
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { RgbControls } from '../../components/images/RgbControls';
+import init, { adjust_color_channel } from '@/rust/image-manipulation/pkg/image_manipulation';
+import throttle from 'lodash.throttle';
+import shrek from '@/public/images/shrek.0.webp';
 
 export default function Images() {
   const inputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { imageData, originalImageData } = useImageData(inputRef);
+  const { imageData, originalImageData, reset, loadImageFromUrl } = useImageData(inputRef);
+  const [rgbControlsKey, setRgbControlsKey] = useState<string>();
+
+  const onControlsReset = useCallback(() => {
+    reset();
+  }, [reset]);
 
   const paint = useCallback((data?: ImageData) => {
     const canvas = canvasRef.current;
@@ -22,51 +24,77 @@ export default function Images() {
       return;
     }
 
-    requestAnimationFrame(() => {
-      const ctx = canvas.getContext('2d')!;
-      canvas.height = data.height;
-      canvas.width = data.width;
-      ctx.reset();
-      ctx.putImageData(data, 0, 0);
-    });
+    const ctx = canvas.getContext('2d')!;
+    canvas.height = data.height;
+    canvas.width = data.width;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.putImageData(data, 0, 0);
   }, []);
 
-  useEffect(() => {
-    paint(imageData);
-  }, [paint, imageData]);
-
-  const onControlsChange = useCallback(
-    (colors: RGBA) => {
+  const onControlsChange = useMemo(() => {
+    const handler = (color: keyof RGBA, value: number) => {
       if (!imageData || !originalImageData) {
         return;
       }
 
-      const { red, green, blue, alpha } = colors;
-
-      const n = imageData.data.length;
-
-      requestAnimationFrame(() => {
-        for (let i = 0; i < n; i += 4) {
-          imageData.data[i] = change(originalImageData.data[i], red, 127);
-          imageData.data[i + 1] = change(originalImageData.data[i + 1], green, 127);
-          imageData.data[i + 2] = change(originalImageData.data[i + 2], blue, 127);
-          imageData.data[i + 3] = change(originalImageData.data[i + 3], alpha, 255);
-        }
-      });
+      adjust_color_channel(
+        imageData.data as unknown as Uint8Array,
+        originalImageData.data as unknown as Uint8Array,
+        color,
+        value
+      );
 
       paint(imageData);
-    },
-    [imageData, originalImageData, paint]
-  );
+    };
+
+    return throttle(handler, 100);
+  }, [imageData, originalImageData, paint]);
+
+  useEffect(() => {
+    init();
+  }, []);
+
+  useEffect(() => {
+    setRgbControlsKey(inputRef.current?.value);
+    paint(imageData);
+  }, [paint, imageData]);
+
+  const loadExample = () => {
+    setRgbControlsKey(shrek.src);
+    loadImageFromUrl(shrek.src);
+
+    if (inputRef.current) {
+      inputRef.current.value = '';
+    }
+  };
 
   return (
-    <main className="h-full flex flex-col gap-2 p-5">
-      <RgbControls disabled={!imageData} onChange={onControlsChange} />
+    <main className="h-full flex-col md:flex-row flex gap-2 p-5">
+      <div className="flex flex-col gap-2">
+        <RgbControls
+          key={rgbControlsKey}
+          disabled={!imageData}
+          onChange={onControlsChange}
+          onReset={onControlsReset}
+        />
 
-      <input type="file" ref={inputRef} accept="image/*" className="flex-shrink-0" />
+        <div className="text-slate-900 flex flex-col gap-2">
+          <input type="file" ref={inputRef} accept="image/*" />
+          or
+          <div>
+            <button
+              type="button"
+              onClick={loadExample}
+              className="bg-green-600 hover:bg-green-700 active:bg-green-800 text-white py-2 px-4 rounded"
+            >
+              Load example
+            </button>
+          </div>
+        </div>
+      </div>
 
       <div>
-        <canvas className="w-[100%]" ref={canvasRef}></canvas>
+        <canvas className="w-[100%] max-h-[100%]" ref={canvasRef}></canvas>
       </div>
     </main>
   );
