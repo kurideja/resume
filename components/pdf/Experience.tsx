@@ -15,7 +15,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   achievements: {
-    fontSize: 10,
+    fontSize: 11,
   },
   wrapper: {
     marginBottom: 8,
@@ -27,7 +27,7 @@ interface Props {
   company: string;
   achievements: string[];
   startDate: string;
-  endDate: string;
+  endDate?: string;
 }
 
 export function Experience(props: Props) {
@@ -46,7 +46,7 @@ export function Experience(props: Props) {
         <View style={styles.timeline}>
           <Text>{startDateFormatted}</Text>
           <Text>-</Text>
-          <Text>{endDateFormatted}</Text>
+          <Text>{endDateFormatted || 'present'}</Text>
         </View>
       </View>
 

@@ -4,6 +4,10 @@ const options: Intl.DateTimeFormatOptions = {
   timeZone: 'UTC',
 };
 
-export const useShortDate = (date: string): string => {
+export const useShortDate = (date?: string): string | null => {
+  if (!date) {
+    return null;
+  }
+
   return Intl.DateTimeFormat('en-US', options).format(new Date(date));
 };

@@ -8,11 +8,11 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     marginTop: 16,
     textTransform: 'uppercase',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: 'bold',
   },
   content: {
-    fontSize: 10,
+    fontSize: 11,
   },
 });
 
@@ -24,11 +24,11 @@ export function ResumeSection(props: PropsWithChildren<Props>) {
   const { title, children } = props;
 
   return (
-    <>
+    <View wrap={false}>
       <View style={styles.title}>
         <Text>{title}</Text>
       </View>
       <View style={styles.content}>{children}</View>
-    </>
+    </View>
   );
 }

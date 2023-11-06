@@ -3,7 +3,7 @@ import { StyleSheet, Text } from '@react-pdf/renderer';
 const styles = StyleSheet.create({
   pageNumber: {
     position: 'absolute',
-    fontSize: 12,
+    fontSize: 11,
     bottom: 16,
     left: 0,
     right: 0,

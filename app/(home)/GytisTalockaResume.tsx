@@ -15,17 +15,18 @@ const styles = StyleSheet.create({
   page: {
     flexDirection: 'column',
     padding: 24,
-    fontFamily: 'Open Sans',
+    fontFamily: 'Computer Modern',
   },
   title: {
-    fontSize: 21,
+    fontSize: 18,
     textTransform: 'uppercase',
+    fontWeight: 'bold',
   },
   link: {
     textDecoration: 'none',
   },
   contacts: {
-    fontSize: 12,
+    fontSize: 11,
     display: 'flex',
     flexDirection: 'row',
     columnGap: 8,
@@ -37,15 +38,15 @@ const styles = StyleSheet.create({
 });
 
 Font.register({
-  family: 'Open Sans',
+  family: 'Computer Modern',
   fonts: [
-    { src: './fonts/PlayfairDisplay-Medium.ttf', fontWeight: 'normal' },
+    { src: './fonts/computer-modern/cmunrm.ttf', fontWeight: 'normal' },
     {
-      src: './fonts/PlayfairDisplay-Bold.ttf',
+      src: './fonts/computer-modern/cmunbx.ttf',
       fontWeight: 'bold',
     },
     {
-      src: './fonts/PlayfairDisplay-MediumItalic.ttf',
+      src: './fonts/computer-modern/cmunci.ttf',
       fontStyle: 'italic',
     },
   ],
@@ -125,7 +126,6 @@ export function GytisTalockaResume() {
                 'Facilitated 1-on-1 sessions with frontend developers',
               ]}
               startDate="2021-06-01"
-              endDate="2023-06-01"
             />
 
             <Experience
@@ -154,7 +154,9 @@ export function GytisTalockaResume() {
               endDate="2019-10-01"
             />
           </ResumeSection>
+        </View>
 
+        <View>
           <ResumeSection title="Education">
             <Education
               programme="Strategic Information Systems Management"
